@@ -13,7 +13,7 @@ def created_user(mock_db):
         "password": hashed_pw,
     }
     mock_db.users.insert_one(user_data)
-    return {"email": user_data["email"], "password": password}
+    return {"email": user_data["email"], "username": user_data["username"], "password": password}
 
 
 @pytest.mark.parametrize("login_identifier_key", ["email", "username"])
