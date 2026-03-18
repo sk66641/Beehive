@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { jwtDecode } from "jwt-decode";
 
-interface JwtPayload {
+export interface JwtPayload {
   sub: string;
   role?: "admin" | "user";
   exp?: number;
