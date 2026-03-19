@@ -195,13 +195,14 @@ def complete_signup():
         password.encode(), bcrypt.gensalt()
     )
 
+    now_utc = datetime.now(timezone.utc)
     result = db.users.insert_one({
         "email": email,
         "username": username,
         "password": hashed_password,
         "role": role,
-        "created_at": datetime.now(timezone.utc),
-        "last_active": datetime.now(timezone.utc)
+        "created_at": now_utc,
+        "last_active": now_utc
     })
 
     token = create_access_token(
@@ -288,13 +289,14 @@ def set_password():
 
         role = "admin" if is_admin_email(email) else "user"
 
+        now_utc = datetime.now(timezone.utc)
         user_id = db.users.insert_one({
             "email": email,
             "username": email.split("@")[0],
             "password": hashed,
             "role": role,
-            "created_at": datetime.now(timezone.utc),
-            "last_active": datetime.now(timezone.utc)
+            "created_at": now_utc,
+            "last_active": now_utc
         }).inserted_id
 
         # Cleanup OTPs
@@ -371,6 +373,7 @@ def google_auth():
         role = "admin" if is_admin_email(email) else "user"
 
         # Create a minimal Google-backed user (no local password)
+        now_utc = datetime.now(timezone.utc)
         result = db.users.insert_one({
             "email": email,
             "username": name or email.split("@")[0],
@@ -378,8 +381,8 @@ def google_auth():
             "role": role,
             "provider": "google",
             "google_id": sub,
-            "created_at": datetime.now(timezone.utc),
-            "last_active": datetime.now(timezone.utc)
+            "created_at": now_utc,
+            "last_active": now_utc
         })
         user_id = str(result.inserted_id)
     else:

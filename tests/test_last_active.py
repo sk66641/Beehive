@@ -3,6 +3,16 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime, timezone
 from bson import ObjectId
 
+
+def _assert_last_active_set(mock_insert_call):
+    """Helper to verify 'last_active' was set correctly on insert."""
+    args, kwargs = mock_insert_call.call_args
+    inserted_doc = args[0]
+    assert "last_active" in inserted_doc
+    assert isinstance(inserted_doc["last_active"], datetime)
+    assert inserted_doc["last_active"].tzinfo == timezone.utc
+
+
 def test_complete_signup_sets_last_active(client):
     """
     Verify that /api/auth/complete-signup sets the last_active field.
@@ -27,13 +37,7 @@ def test_complete_signup_sets_last_active(client):
             )
             
             assert response.status_code == 201
-            
-            # Verify the call to insert_one included last_active
-            args, kwargs = mock_users_col.insert_one.call_args
-            inserted_doc = args[0]
-            assert "last_active" in inserted_doc
-            assert isinstance(inserted_doc["last_active"], datetime)
-            assert inserted_doc["last_active"].tzinfo == timezone.utc
+            _assert_last_active_set(mock_users_col.insert_one)
 
 def test_set_password_signup_sets_last_active(client):
     """
@@ -59,13 +63,7 @@ def test_set_password_signup_sets_last_active(client):
             )
             
             assert response.status_code == 200
-            
-            # Verify the call to insert_one included last_active
-            args, kwargs = mock_users_col.insert_one.call_args
-            inserted_doc = args[0]
-            assert "last_active" in inserted_doc
-            assert isinstance(inserted_doc["last_active"], datetime)
-            assert inserted_doc["last_active"].tzinfo == timezone.utc
+            _assert_last_active_set(mock_users_col.insert_one)
 
 def test_google_auth_new_user_sets_last_active(client):
     """
@@ -95,10 +93,4 @@ def test_google_auth_new_user_sets_last_active(client):
                 )
                 
                 assert response.status_code == 200
-                
-                # Verify the call to insert_one included last_active
-                args, kwargs = mock_users_col.insert_one.call_args
-                inserted_doc = args[0]
-                assert "last_active" in inserted_doc
-                assert isinstance(inserted_doc["last_active"], datetime)
-                assert inserted_doc["last_active"].tzinfo == timezone.utc
+                _assert_last_active_set(mock_users_col.insert_one)
