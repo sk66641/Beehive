@@ -4,7 +4,7 @@ import { apiUrl } from '../utils/api';
 interface ChatDrawerProps {
   userId: string;
   userRole: 'admin' | 'user';
-  targetUserId?: string;
+  targetUserId?: string; // For admin, the user to chat with
   onClose: () => void;
 }
 
@@ -15,6 +15,7 @@ interface ChatUser {
 }
 
 const ChatDrawer: React.FC<ChatDrawerProps> = ({ userId, userRole, targetUserId, onClose }) => {
+  // tokens are stored in localStorage under 'access_token'
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -92,6 +93,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({ userId, userRole, targetUserId,
     if (userRole === 'admin') fetchUserList();
   }, [userRole]);
 
+  // Scroll to bottom on new messages
   useEffect(() => {
     if (!userId || (userRole === 'admin' && !adminTargetId)) return;
     fetchMessages();
