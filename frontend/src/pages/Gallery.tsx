@@ -280,9 +280,6 @@ const Gallery = () => {
       
       const response = await authenticatedFetch(`/api/user/user_uploads?${params}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         mode: 'cors',
         signal: abortController.signal
       });
