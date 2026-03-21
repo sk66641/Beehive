@@ -155,13 +155,13 @@ def _parse_iso_date(date_string, field_name):
 def search_and_filter_images(user_id, search_query=None, sentiment=None, from_date=None, to_date=None, 
                              sort_by='date', sort_order='desc', limit=12, offset=0):
     try:
+        user_id_candidates = [user_id]
         try:
-            normalized_user_id = ObjectId(user_id)
+            user_id_candidates.append(ObjectId(user_id))
         except Exception:
-            # Keep compatibility with non-ObjectId legacy user IDs
-            normalized_user_id = user_id
+            pass
 
-        query = {'user_id': normalized_user_id}
+        query = {'user_id': {'$in': user_id_candidates}}
         update_last_seen(user_id)
         if search_query and search_query.strip():
             query['$text'] = {'$search': search_query.strip()}
