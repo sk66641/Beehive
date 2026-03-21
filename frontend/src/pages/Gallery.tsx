@@ -350,11 +350,12 @@ const Gallery = () => {
   useEffect(() => {
     if (viewMode === 'rolling') return;
     if (searchQuery || sentiment || fromDate || toDate || sortBy !== 'date' || sortOrder !== 'desc') return; // Disable for search mode
+    if (!hasMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const target = entries[0];
-        if (target.isIntersecting && !loadingMore && !loading && currentPage < totalPages) {
+        if (target.isIntersecting && !loadingMore && !loading && hasMore && currentPage < totalPages) {
           const nextPage = currentPage + 1;
           fetchUploads(nextPage, true);
         }
@@ -376,7 +377,7 @@ const Gallery = () => {
         observer.unobserve(currentTarget);
       }
     };
-  }, [fetchUploads, currentPage, totalPages, loadingMore, loading, viewMode, searchQuery, sentiment, fromDate, toDate, sortBy, sortOrder]);
+  }, [fetchUploads, currentPage, totalPages, hasMore, loadingMore, loading, viewMode, searchQuery, sentiment, fromDate, toDate, sortBy, sortOrder]);
   
   const handleClearFilters = () => {
     setSearchQuery('');
@@ -1244,7 +1245,7 @@ const Gallery = () => {
             )}
 
             {/* Infinite scroll observer target */}
-            <div ref={observerTarget} className="h-1" />
+            {hasMore && <div ref={observerTarget} className="h-1" />}
 
             {/* End of page indicator */}
             {currentPage >= totalPages && images.length > 0 && (
