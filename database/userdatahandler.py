@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 import re
 import bcrypt
 from flask import session
@@ -43,10 +44,29 @@ def get_user_by_username(username: str):
     return user
 
 
+def get_user_by_id(user_id: str):
+    """Retrieve a user document by their MongoDB ObjectId string."""
+    try:
+        user = beehive_user_collection.find_one({"_id": ObjectId(user_id)})
+        return user
+    except InvalidId as e:
+        logger.warning(f"Invalid user ID format: {user_id}. Error: {e}")
+        return None
+    except Exception as e:
+        logger.warning(f"Could not retrieve user for id {user_id}: {e}")
+        return None
+
+
 # Save image to MongoDB
 def save_image(id, filename, title, description, time_created, audio_filename=None, sentiment=None):
+    try:
+        normalized_user_id = ObjectId(id)
+    except (TypeError, ValueError):
+        # Keep compatibility with non-ObjectId legacy user IDs
+        normalized_user_id = id
+
     image = {
-        'user_id': ObjectId(id),
+        'user_id': normalized_user_id,
         'filename': filename,
         'title': title,
         'description': description,
@@ -149,7 +169,14 @@ def _parse_iso_date(date_string, field_name):
 def search_and_filter_images(user_id, search_query=None, sentiment=None, from_date=None, to_date=None, 
                              sort_by='date', sort_order='desc', limit=12, offset=0):
     try:
-        query = {'user_id': user_id}
+        user_id_candidates = {user_id}
+        try:
+            user_id_candidates.add(ObjectId(user_id))
+        except (TypeError, ValueError):
+            # This can happen with legacy string-based user IDs
+            pass
+
+        query = {'user_id': {'$in': list(user_id_candidates)}}
         update_last_seen(user_id)
         if search_query and search_query.strip():
             query['$text'] = {'$search': search_query.strip()}
