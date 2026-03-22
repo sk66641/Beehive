@@ -21,7 +21,6 @@ def mock_db(mock_mongo_client_session):
         db.drop_collection(collection)
     yield db
 
-from app import app as flask_app
 @pytest.fixture
 def app(mock_mongo_client_session):
     from app import app as flask_app
