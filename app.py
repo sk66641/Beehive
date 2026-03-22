@@ -43,6 +43,7 @@ from database.userdatahandler import (
     get_image_by_id,
     get_image_by_audio_filename,
     search_and_filter_images,
+    get_user_by_id,
     save_image,
     save_notification,
     update_image,
@@ -345,7 +346,9 @@ AUDIO_MIME_TO_EXTENSION = {
 def upload_images():
     user_id = request.current_user["id"]
     try:
-        username = sanitize_text(request.form.get("username", ""))
+        # Look up username from DB using the authenticated user_id (fixes issue #553)
+        user_doc = get_user_by_id(user_id) or {}
+        username = user_doc.get("username") or user_doc.get("email") or "Unknown User"
         files = request.files.getlist("files")  # Supports multiple file uploads
         title = sanitize_text(request.form.get("title", ""))
         sentiment = sanitize_text(request.form.get("sentiment"))
