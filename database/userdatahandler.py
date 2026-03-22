@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 import re
 import bcrypt
 from flask import session
@@ -41,6 +42,19 @@ def get_user_by_username(username: str):
     }
     user = beehive_user_collection.find_one(query)
     return user
+
+
+def get_user_by_id(user_id: str):
+    """Retrieve a user document by their MongoDB ObjectId string."""
+    try:
+        user = beehive_user_collection.find_one({"_id": ObjectId(user_id)})
+        return user
+    except InvalidId as e:
+        logger.warning(f"Invalid user ID format: {user_id}. Error: {e}")
+        return None
+    except Exception as e:
+        logger.warning(f"Could not retrieve user for id {user_id}: {e}")
+        return None
 
 
 # Save image to MongoDB
