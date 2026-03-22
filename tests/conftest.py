@@ -23,7 +23,6 @@ def mock_db(mock_mongo_client_session):
 
 @pytest.fixture
 def app(mock_mongo_client_session):
-    from app import app as flask_app
     flask_app.config.update({
         "TESTING": True,
         "SECRET_KEY": TEST_SECRET_KEY,
