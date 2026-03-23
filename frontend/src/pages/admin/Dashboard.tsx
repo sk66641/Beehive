@@ -83,12 +83,13 @@ const Dashboard = () => {
       setFilterUser(userParam);
     }
     fetchDashboardData();
-  }, [location.search,sortOption,filterFromDate,filterToDate,filterUser,page,]);
+  }, [location.search, sortOption, filterFromDate, filterToDate, filterUser,page,]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
+      
       // Get the JWT token from helper
       const token = getToken();
 
@@ -98,6 +99,7 @@ const Dashboard = () => {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
+
       // build query params to send filtering/sorting to server
       const qp = new URLSearchParams();
       qp.set("limit", String(limit));
@@ -107,8 +109,7 @@ const Dashboard = () => {
       if (filterToDate) qp.set('to', filterToDate);
       if (sortOption) qp.set('sort', sortOption);
 
-      const response = await fetch(
-        apiUrl(`/api/admin/dashboard?${qp.toString()}`),{
+      const response = await fetch(apiUrl(`/api/admin/dashboard?${qp.toString()}`),{
           method: 'GET',
           headers,
           credentials: 'include',
@@ -123,9 +124,7 @@ const Dashboard = () => {
       setDashboardData(data);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch dashboard data",
-      );
+      setError(err instanceof Error ? err.message : 'Failed to fetch dashboard data');
     } finally {
       setLoading(false);
     }
@@ -313,7 +312,7 @@ const Dashboard = () => {
                         <td className="py-3 px-4 dark:text-gray-200">{upload.user}</td>
                         <td className="py-3 px-4 dark:text-gray-200">
                           {new Date(upload.timestamp).toLocaleString()}
-                          </td>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
