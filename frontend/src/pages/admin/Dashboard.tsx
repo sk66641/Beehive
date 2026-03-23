@@ -332,7 +332,7 @@ const Dashboard = () => {
 
               <button
                 onClick={() => setPage((prev) => prev + 1)}
-                disabled={recentUploads.length < limit}
+                disabled={!dashboardData || page * limit >= dashboardData.total}
                 className="px-4 py-2 bg-yellow-400 rounded disabled:opacity-50"
               >
                 Next
