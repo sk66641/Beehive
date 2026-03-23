@@ -48,10 +48,16 @@ def admin_user_images_show(user_id):
 def get_dashboard_data():
     try:
         user = sanitize_api_query(request.args.get("user"))
-        limit_str = request.args.get("limit", "10")
-        if not limit_str.isdigit():
-            return jsonify({"error": "Invalid 'limit' parameter. Must be an integer."}), 400
-        limit = min(int(limit_str), 50)
+
+        try:
+            page = int(request.args.get("page", "1"))
+            limit = int(request.args.get("limit", "10"))
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid pagination parameters. 'page' and 'limit' must be integers."}), 400
+
+        page = max(1, page)
+        limit = min(max(1, limit), 50)
+
         from_date = None
         end_date = None
         from_date_str = request.args.get("from")
@@ -71,10 +77,11 @@ def get_dashboard_data():
         if sort_method and sort_method not in VALID_SORT_METHODS:
             return jsonify({"error": f"Invalid sort method. Allowed values: {', '.join(VALID_SORT_METHODS)}"}), 400
         stats = get_upload_stats()
-        recent_uploads = get_recent_uploads(limit=limit,username_filter=user,from_date=from_date,end_date=end_date,sort_method=sort_method)
+        recent_uploads, total_count = get_recent_uploads(page=page, limit=limit, username_filter=user, from_date=from_date, end_date=end_date, sort_method=sort_method)
         return jsonify({
             "stats": stats,
-            "recentUploads": recent_uploads
+            "recentUploads": recent_uploads,
+            "total": total_count
         }), 200
 
     except Exception:
