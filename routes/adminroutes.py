@@ -7,8 +7,10 @@ from database.userdatahandler import (
     get_recent_uploads,
     get_upload_stats,
     get_upload_analytics,
-    get_user_analytics
+    get_user_analytics,
+    unlock_account,
 )
+from datetime import timezone
 from utils.pagination import parse_pagination_params
 from utils.logger import Logger
 from utils.sanitize import sanitize_api_query
@@ -125,8 +127,13 @@ def list_users():
 
         cursor = users_col.find(mongo_filter).skip(offset).limit(limit)
 
+        now = datetime.now(timezone.utc)
         users = []
         for u in cursor:
+            locked_until = u.get("locked_until")
+            is_locked = bool(
+                locked_until and locked_until.replace(tzinfo=timezone.utc) > now
+            )
             users.append({
                 "id": str(u.get("_id")),
                 "user_id": str(u.get("_id")),
@@ -135,12 +142,27 @@ def list_users():
                 "lastActive": u.get("last_active") or u.get("last_seen") or None,
                 "status": u.get("status", "active"),
                 "image": u.get("avatar_url", ""),
+                "isLocked": is_locked,
+                "failedAttempts": u.get("failed_login_attempts", 0),
             })
 
         return jsonify({"users": users, "totalCount": total_count}), 200
     except Exception:
         logger.error("Error listing users", exc_info=True)
         return jsonify({"error": "Failed to list users"}), 500
+
+
+@admin_bp.route("/users/<user_id>/unlock", methods=["POST"])
+@require_admin_role
+def unlock_user(user_id):
+    try:
+        success = unlock_account(user_id)
+        if success:
+            return jsonify({"message": "Account unlocked successfully"}), 200
+        return jsonify({"error": "User not found"}), 404
+    except Exception:
+        logger.error("Error unlocking user account", exc_info=True)
+        return jsonify({"error": "Failed to unlock account"}), 500
 
 
 @admin_bp.route("/users/only-users", methods=["GET"])

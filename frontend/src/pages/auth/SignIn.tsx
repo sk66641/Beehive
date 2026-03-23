@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { saveToken, getUserRole } from "../../utils/auth";
 import { apiFetch } from "../../utils/apiFetch";
+import { API_BASE_URL } from "../../utils/api";
 import { GoogleLogin } from "@react-oauth/google";
 
 const SignInPage = () => {
@@ -9,28 +10,42 @@ const SignInPage = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State for visibility
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLocked(false);
     setLoading(true);
 
     try {
-      const data = await apiFetch("/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
-      const token = data.access_token;
-      saveToken(token);
+      const data = await res.json();
 
+      if (res.status === 429) {
+        setIsLocked(true);
+        setError(data.error || "Account temporarily locked. Please try again later.");
+        return;
+      }
+
+      if (!res.ok) {
+        setError(data.error || "Invalid credentials");
+        return;
+      }
+
+      saveToken(data.access_token);
       const role = getUserRole();
       navigate(role === "admin" ? "/admin" : "/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Invalid credentials");
+    } catch {
+      setError("Unable to connect. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -48,7 +63,12 @@ const SignInPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
+            <div className={`border px-4 py-3 rounded-lg text-sm text-center ${
+              isLocked
+                ? "bg-orange-50 border-orange-300 text-orange-700"
+                : "bg-red-50 border-red-200 text-red-600"
+            }`}>
+              {isLocked && <span className="font-semibold block mb-0.5">Account Locked</span>}
               {error}
             </div>
           )}
