@@ -530,8 +530,9 @@ def get_upload_stats():
         }
 
 # Get recent uploads for admin dashboard
-def get_recent_uploads(limit=10, username_filter=None, from_date=None, end_date=None, sort_method="date_desc"):
+def get_recent_uploads(page=1, limit=10, username_filter=None, from_date=None, end_date=None, sort_method="date_desc"):
     try:
+        offset = max(0, (page - 1)) * limit
         pipeline = []
         match = {}
         created_at = {}
@@ -569,18 +570,24 @@ def get_recent_uploads(limit=10, username_filter=None, from_date=None, end_date=
             {"$set": {"username": "$user_mapping.username"}},
         ])
         if username_filter:
-            pipeline.append({"$match":{"username":{"$regex": re.escape(username_filter), "$options": "i"}}})
-        
-        sort_criteria = {"created_at": -1} 
+            pipeline.append({"$match": {"username": {"$regex": re.escape(username_filter), "$options": "i"}}})
+
+        sort_criteria = {"created_at": -1}
         if sort_method == "date_asc":
             sort_criteria = {"created_at": 1}
         elif sort_method == "user_asc":
             sort_criteria = {"username": 1, "created_at": -1}
         elif sort_method == "user_desc":
             sort_criteria = {"username": -1, "created_at": -1}
-        pipeline.append({"$sort": sort_criteria})
+        # Perform count before sorting for better performance.
+        count_pipeline = pipeline + [{"$count": "total"}]
+        count_result = list(beehive_image_collection.aggregate(count_pipeline))
+        total_count = count_result[0].get("total", 0) if count_result else 0
 
+        pipeline.append({"$sort": sort_criteria})
+        pipeline.append({"$skip": offset})
         pipeline.append({"$limit": limit})
+
         result = beehive_image_collection.aggregate(pipeline)
         uploads_list = []
         for upload in result:
@@ -597,10 +604,10 @@ def get_recent_uploads(limit=10, username_filter=None, from_date=None, end_date=
                 'audio_filename': upload.get('audio_filename', ''),
                 'sentiment': upload.get('sentiment', '')
             })
-        return uploads_list
+        return uploads_list, total_count
     except Exception as e:
         logger.error(f"Error getting recent uploads: {str(e)}")
-        return []
+        return [], 0
 
 def save_notification(user_id, username, filename, title, time_created, sentiment):
     # Insert notification for admin
