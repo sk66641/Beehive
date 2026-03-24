@@ -5,7 +5,7 @@
 - MongoDB (running locally)
 - Google OAuth2 credentials
 
-## 2. Installation
+## Installation
 
 > **Note:** For Docker-based setup, see [docker-setup.md](docker-setup.md)
 
