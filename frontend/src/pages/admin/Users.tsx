@@ -236,7 +236,6 @@ const Users = () => {
                               {user.name || 'N/A'}
                             </button>
                               <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {user.email || 'N/A'}
                               </div>
                             </div>
                           </div>
