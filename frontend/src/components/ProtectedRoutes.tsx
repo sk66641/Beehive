@@ -52,7 +52,8 @@ export const ProtectedMedia = ({ filename, isPdf = false, className = '', alt = 
         const response = await fetch(apiUrl(`/api/files/${filename}`), {
           headers: {
             'Authorization': `Bearer ${getToken()}`
-          }
+          },
+          credentials: 'include'
         });
 
         if (!response.ok) throw new Error('Failed to load media');
