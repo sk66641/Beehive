@@ -981,7 +981,11 @@ def health_check():
         return jsonify(health_status), 200
     except Exception as e:
         app.logger.error(f"Health check failed: {str(e)}")
-        return error_response("Service Unavailable"), 503
+        return jsonify({
+            "status": "unhealthy",
+            "error": "Service Unavailable",
+            "timestamp": current_time
+        }), 503
     
 
 # Import blueprints
