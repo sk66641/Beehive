@@ -380,7 +380,7 @@ def upload_images():
             mime_detector = MAGIC
         else:
             if magic is None:
-                return jsonify({"error": "Server MIME detection unavailable; contact administrator."}), 500
+                return error_response("Server MIME detection unavailable; contact administrator."), 500
             global _FALLBACK_MAGIC
             if _FALLBACK_MAGIC is None:
                 try:
@@ -390,7 +390,7 @@ def upload_images():
                         "MIME detection unavailable: libmagic missing or misconfigured. Install system libmagic and python-magic. Error: %s",
                         e,
                     )
-                    return jsonify({"error": "Server MIME detection unavailable; contact administrator."}), 500
+                    return error_response("Server MIME detection unavailable; contact administrator."), 500
             mime_detector = _FALLBACK_MAGIC
 
         for file in files:
