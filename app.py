@@ -724,7 +724,7 @@ def serve_protected_file(filename):
         return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
     except Exception as e:
-        app_logger.error(f"Error serving protected file '{filename}': {str(e)}")
+        app.logger.error(f"Error serving protected file '{filename}': {str(e)}")
         return jsonify({"error": "Failed to serve file"}), 500
 
 # Delete images uploaded by the user
