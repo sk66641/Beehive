@@ -455,7 +455,7 @@ def upload_images():
                     audio_file.save(audio_path)
 
                 # Always safe to call now
-                time_created = datetime.datetime.now()
+                time_created = datetime.datetime.now(datetime.timezone.utc)
                 
                 # Generate pdf thumbnail
                 thumbnail_filename = None
