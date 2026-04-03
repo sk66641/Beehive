@@ -1,4 +1,5 @@
 import re
+from utils.validation import sanitize_api_query
 from flask import Blueprint, request, jsonify
 from utils.jwt_auth import require_admin_role
 from datetime import datetime
