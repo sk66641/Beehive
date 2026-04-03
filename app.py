@@ -716,7 +716,7 @@ def serve_protected_file(filename):
         current_user_role = request.current_user.get("role", "user")
         
         is_admin = current_user_role == "admin"
-        is_owner = check_owner(current_user_id, image.get("user_id"))
+        is_owner = str(image.get("user_id")) == current_user_id
 
         if not (is_admin or is_owner):
             return jsonify({"error": "Unauthorized: You do not have permission to view this file."}), 403
