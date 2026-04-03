@@ -388,7 +388,7 @@ def upload_images():
                         "MIME detection unavailable: libmagic missing or misconfigured. Install system libmagic and python-magic. Error: %s",
                         e,
                     )
-                    return error_response("Server MIME detection unavailable; contact administrator."), 500
+                    return error_response("Server MIME detection unavailable; contact administrator.", 500)
             mime_detector = _FALLBACK_MAGIC
 
         for file in files:
