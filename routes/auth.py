@@ -264,6 +264,8 @@ def set_password():
         email = validate_email(data.get("email"))
         password = sanitize_string(data.get("password"))
         purpose = sanitize_string(data.get("purpose"), field_name="purpose").lower()
+        if purpose not in ["signup", "reset"]:
+            return jsonify({"error": "Invalid purpose"}), 400
     except ValidationError as e:
         current_app.logger.warning("SET PASSWORD VALIDATION ERROR")
         return jsonify({"error": str(e)}), 400
