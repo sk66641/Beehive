@@ -7,3 +7,17 @@ export const requestOtp = (email: string, purpose: "signup" | "reset") => {
   });
 };
 
+export const verifyOtp = (email: string, otp: string) => {
+  return apiFetch("/api/auth/verify-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, otp }),
+  });
+};
+
+export const setPassword = (email: string, password: string, purpose: "signup" | "reset") => {
+  return apiFetch("/api/auth/set-password", {
+    method: "POST",
+    body: JSON.stringify({ email, password, purpose }),
+  });
+};
+
