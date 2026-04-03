@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getToken } from '../../utils/auth';
 import { motion } from 'framer-motion';
@@ -28,7 +28,6 @@ const UserUploads = () => {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -116,18 +115,8 @@ const UserUploads = () => {
 
   const handleAudioClick = (audioFilename: string) => {
     if (currentAudio === audioFilename) {
-      // If clicking the same audio, stop it
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
       setCurrentAudio(null);
     } else {
-      // If clicking a different audio, stop current and play new
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
       setCurrentAudio(audioFilename);
     }
   };
