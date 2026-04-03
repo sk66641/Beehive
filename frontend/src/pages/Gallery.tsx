@@ -509,10 +509,8 @@ const Gallery = () => {
     toast.success('Deletion undone');
   }, [restoreDeletedImage]);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!deleteCandidate) {
-      return;
-    }
       return;
     }
 
