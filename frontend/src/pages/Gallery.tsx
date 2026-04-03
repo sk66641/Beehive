@@ -508,7 +508,9 @@ const Gallery = () => {
   }, [restoreDeletedImage]);
 
   const handleConfirmDelete = async () => {
-    if (!deleteCandidate || isDeleting) {
+    if (!deleteCandidate) {
+      return;
+    }
       return;
     }
 
