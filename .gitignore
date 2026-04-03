@@ -173,3 +173,10 @@ user_info.json
 
 # Security audit reports
 security_audit_*.txt
+
+
+_bmad
+.claude
+.codex
+.cursor
+.vscode
