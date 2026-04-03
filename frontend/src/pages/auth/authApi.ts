@@ -21,3 +21,10 @@ export const setPassword = (email: string, password: string, purpose: "signup" |
   });
 };
 
+export const completeSignup = (email: string, username: string, password: string) => {
+  return apiFetch("/api/auth/complete-signup", {
+    method: "POST",
+    body: JSON.stringify({ email, username, password }),
+  });
+};
+
