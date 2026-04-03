@@ -252,7 +252,7 @@ def login():
         return jsonify({"error": "User not found"}), 401
 
     # Check account lockout before touching the password
-    lock = get_lock_status(user["_id"])
+    lock = get_lock_status(user)
     if lock["is_locked"]:
         mins = lock["remaining_seconds"] // 60
         secs = lock["remaining_seconds"] % 60
