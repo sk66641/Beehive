@@ -857,9 +857,8 @@ def user_images_show():
 @require_auth
 def user_stats():
     """Return upload statistics for the authenticated user."""
-    try:
-        user_id = ObjectId(request.current_user["id"])
-    except Exception:
+    user_id = request.current_user.get("id")
+    if not user_id:
         return jsonify({"error": "Invalid user"}), 400
 
     stats = get_user_stats(user_id)
