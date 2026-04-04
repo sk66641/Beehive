@@ -138,13 +138,7 @@ def list_users():
         now = datetime.now(timezone.utc)
         users = []
         for u in cursor:
-            locked_until = u.get("locked_until")
-            locked_until_aware = (
-                locked_until if locked_until and locked_until.tzinfo is not None
-                else locked_until.replace(tzinfo=timezone.utc) if locked_until
-                else None
-            )
-            is_locked = bool(locked_until_aware and locked_until_aware > now)
+            lock = get_lock_status(u, now=now)
             users.append({
                 "id": str(u.get("_id")),
                 "user_id": str(u.get("_id")),
@@ -153,8 +147,8 @@ def list_users():
                 "lastActive": u.get("last_active") or u.get("last_seen") or None,
                 "status": u.get("status", "active"),
                 "image": u.get("avatar_url", ""),
-                "isLocked": is_locked,
-                "failedAttempts": u.get("failed_login_attempts", 0),
+                "isLocked": lock["is_locked"],
+                "failedAttempts": lock["failed_attempts"],
             })
 
         return jsonify({"users": users, "totalCount": total_count}), 200

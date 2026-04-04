@@ -627,36 +627,46 @@ MAX_FAILED_ATTEMPTS = 5
 LOCKOUT_DURATION_MINUTES = 15
 
 
-def get_lock_status(user_id):
-    """Return lock info for a user: is_locked, remaining_seconds, failed_attempts."""
-    try:
-        uid = user_id if isinstance(user_id, ObjectId) else ObjectId(user_id)
-    except (InvalidId, TypeError):
-        return {"is_locked": False, "remaining_seconds": 0, "failed_attempts": 0}
+def get_lock_status(user_id_or_doc, now=None):
+    """Return lock info for a user: is_locked, remaining_seconds, failed_attempts.
 
-    user = beehive_user_collection.find_one(
-        {"_id": uid},
-        {"failed_login_attempts": 1, "locked_until": 1}
-    )
+    Accepts either a user ID (str or ObjectId) or an already-fetched user
+    document (dict), avoiding a redundant DB query when the caller has the
+    document in hand.  An optional ``now`` datetime can be injected for testing.
+    """
+    if isinstance(user_id_or_doc, dict):
+        user = user_id_or_doc
+    else:
+        try:
+            uid = user_id_or_doc if isinstance(user_id_or_doc, ObjectId) else ObjectId(user_id_or_doc)
+        except (InvalidId, TypeError):
+            return {"is_locked": False, "remaining_seconds": 0, "failed_attempts": 0}
+        user = beehive_user_collection.find_one(
+            {"_id": uid},
+            {"failed_login_attempts": 1, "locked_until": 1}
+        )
+
     if not user:
         return {"is_locked": False, "remaining_seconds": 0, "failed_attempts": 0}
 
     locked_until = user.get("locked_until")
-    now = datetime.now(timezone.utc)
+    if now is None:
+        now = datetime.now(timezone.utc)
 
     locked_until_aware = (
         locked_until if locked_until and locked_until.tzinfo is not None
         else locked_until.replace(tzinfo=timezone.utc) if locked_until
         else None
     )
+    failed_attempts = user.get("failed_login_attempts", 0)
     if locked_until_aware and locked_until_aware > now:
         remaining = int((locked_until_aware - now).total_seconds())
         return {
             "is_locked": True,
             "remaining_seconds": remaining,
-            "failed_attempts": user.get("failed_login_attempts", 0),
+            "failed_attempts": failed_attempts,
         }
-    return {"is_locked": False, "remaining_seconds": 0, "failed_attempts": user.get("failed_login_attempts", 0)}
+    return {"is_locked": False, "remaining_seconds": 0, "failed_attempts": failed_attempts}
 
 
 def increment_failed_attempts(user_id):
