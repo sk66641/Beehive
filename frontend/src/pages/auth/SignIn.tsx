@@ -9,7 +9,7 @@ const SignInPage = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State for visibility
   const [error, setError] = useState("");
   const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(false);
