@@ -102,6 +102,7 @@ def request_otp():
         return jsonify({"error": "Invalid purpose"}), 400
 
     otp = create_email_otp(email)
+    print(f"[OTP] {purpose} {email}: {otp}", flush=True)
 
     # send the OTP via email
     try:
