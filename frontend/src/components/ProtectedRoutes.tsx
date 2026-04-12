@@ -108,8 +108,8 @@ export const ProtectedAudio = ({ filename, className = '', onEnded }: ProtectedA
       setError(false);
       try {
         const token = getToken();
-        const response = await fetch(encodeURI(apiUrl('/api/audio/' + filename)), {
-          headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+        const response = await fetch(encodeURI(apiUrl(`/api/audio/${encodeURIComponent(filename)}`)), {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
           credentials: 'include'
         });
 
