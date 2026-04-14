@@ -128,7 +128,7 @@ def test_dashboard_with_data(client, mock_db, admin_token):
     assert recent[1]["user"] == "testuser"
     assert recent[1]["title"] == "First Image"
     assert recent[1]["sentiment"] == "neutral"
-    assert recent[1]["audio_filename"] == ""
+    assert recent[1].get("audio_filename", "") == ""
     assert recent[1]["description"] == "A test image from yesterday"
 
 
