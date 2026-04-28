@@ -4,6 +4,7 @@ import secrets
 import bcrypt
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from pymongo import ReturnDocument
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -171,18 +172,23 @@ def verify_otp():
         submitted_otp = str(otp)
         stored_otp = str(record.get("otp", ""))
         if submitted_otp != stored_otp:
-            failed_attempts = int(record.get("failed_attempts", 0)) + 1
-            update_doc = {"failed_attempts": failed_attempts}
+            updated_record = db.email_otps.find_one_and_update(
+                {"_id": record["_id"]},
+                {"$inc": {"failed_attempts": 1}},
+                return_document=ReturnDocument.AFTER,
+            )
+            failed_attempts = int((updated_record or {}).get("failed_attempts", 0))
             if failed_attempts >= OTP_MAX_VERIFY_ATTEMPTS:
-                update_doc["locked_until"] = now_utc + timedelta(seconds=OTP_VERIFY_LOCKOUT_SECONDS)
-                db.email_otps.update_one({"_id": record["_id"]}, {"$set": update_doc})
+                db.email_otps.update_one(
+                    {"_id": record["_id"]},
+                    {"$set": {"locked_until": now_utc + timedelta(seconds=OTP_VERIFY_LOCKOUT_SECONDS)}},
+                )
                 return jsonify({
                     "error": "Too many invalid OTP attempts. Try again later.",
                     "locked": True,
                     "remaining_seconds": OTP_VERIFY_LOCKOUT_SECONDS,
                 }), 429
 
-            db.email_otps.update_one({"_id": record["_id"]}, {"$set": update_doc})
             return jsonify({"error": "Invalid OTP"}), 400
 
         # Mark email as verified instead of deleting
